@@ -1,6 +1,14 @@
 import { useCallback, useEffect, useState } from 'react';
+import styled from 'styled-components';
 import Board from './components/Board';
 import { Game } from './game/Game';
+import { GlobalStyle } from './style/globalStyles';
+
+const StyledApp = styled.div`
+  width: 100%;
+  max-width: 500px;
+  margin: 0 auto;
+`;
 
 const game = new Game();
 
@@ -47,14 +55,15 @@ function App() {
   }, [keyPressHandler]);
 
   return (
-    <div className="App">
+    <StyledApp>
+      <GlobalStyle />
       {gameOver && <h2 style={{ textAlign: 'center', color: 'red' }}>Game over!</h2>}
       <h2 style={{ textAlign: 'center' }}>Score: {score.toString()}</h2>
       <Board tiles={tiles} />
       <div style={{ display: 'flex', justifyContent: 'center', padding: '24px' }}>
         <button onClick={newGameHandler}>New Game</button>
       </div>
-    </div>
+    </StyledApp>
   );
 }
 

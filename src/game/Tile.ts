@@ -1,10 +1,12 @@
+type TileValue = 2 | 4 | 8 | 16 | 32 | 64 | 128 | 256 | 512 | 1024 | 2048 | 4096 | 8192;
+
 class Tile {
   private static nextId: number = 0;
 
   private _id: number;
-  private _value: number;
+  private _value: TileValue;
 
-  constructor(value: number = 2) {
+  constructor(value: TileValue = 2) {
     this._id = Tile.nextId++;
     this._value = value;
   }
@@ -22,4 +24,4 @@ class Tile {
   }
 }
 
-export { Tile };
+export { Tile, type TileValue };

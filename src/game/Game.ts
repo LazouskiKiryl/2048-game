@@ -4,13 +4,13 @@ import { Tile } from './Tile';
 
 const DEFAULT_SIZE = 4;
 
-type CellType = Array<Array<Tile | null>>;
+type TilesType = Array<Array<Tile | null>>;
 
 class Game {
   private _size: number;
   private _score: number = 0;
   private _gameOver: boolean = false;
-  private _tiles: CellType = [];
+  private _tiles: TilesType = [];
 
   constructor(size: number = DEFAULT_SIZE) {
     this._size = size;
@@ -79,7 +79,7 @@ class Game {
     return this._score;
   }
 
-  get tiles(): CellType {
+  get tiles(): TilesType {
     return this._tiles;
   }
 
@@ -212,4 +212,4 @@ class Game {
   }
 }
 
-export { Game, type CellType as TilesType };
+export { Game, type TilesType };

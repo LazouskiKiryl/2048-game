@@ -1,6 +1,6 @@
-import React, { ReactElement, useCallback, useEffect, useRef, useState } from 'react';
+import React, { useCallback, useEffect, useRef, useState } from 'react';
 import styled from 'styled-components';
-import { TilesType } from '../game/Game';
+import { Tile } from '../game/Tile';
 import TileComponent from './TileComponent';
 
 const StyledBoard = styled.div`
@@ -12,10 +12,11 @@ const StyledBoard = styled.div`
 `;
 
 type BoardProps = {
-  tiles: TilesType;
+  tiles: Tile[];
+  size: number;
 };
 
-const Board: React.FC<BoardProps> = ({ tiles }) => {
+const Board: React.FC<BoardProps> = ({ tiles, size }) => {
   const [width, setWidth] = useState<number>(0);
   const boardRef = useRef<HTMLDivElement>(null);
 
@@ -39,30 +40,11 @@ const Board: React.FC<BoardProps> = ({ tiles }) => {
 
   useEffect(resize, []);
 
-  const generateTiles = () => {
-    const tileElements: Array<ReactElement> = [];
+  const tileElements = tiles.map((tile) => (
+    <TileComponent key={tile.id} tile={tile} boardWidth={width} boardSize={size} />
+  ));
 
-    tiles.forEach((row, rowIndex) => {
-      row.forEach((tile, colIndex) => {
-        if (tile) {
-          tileElements.push(
-            <TileComponent
-              key={tile.id}
-              tile={tile}
-              row={rowIndex}
-              col={colIndex}
-              boardWidth={width}
-              boardSize={tiles.length}
-            />
-          );
-        }
-      });
-    });
-
-    return tileElements;
-  };
-
-  return <StyledBoard ref={boardRef}>{generateTiles()}</StyledBoard>;
+  return <StyledBoard ref={boardRef}>{tileElements}</StyledBoard>;
 };
 
 export default Board;

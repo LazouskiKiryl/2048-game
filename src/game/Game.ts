@@ -4,7 +4,10 @@ import { Tile } from './Tile';
 
 const DEFAULT_SIZE = 4;
 
-type TilesType = Array<Array<Tile | null>>;
+type CellType = Tile | null;
+type TilesType = CellType[][];
+type LineName = 'row' | 'col';
+type SideLine = 'start' | 'end';
 
 class Game {
   private _size: number;
@@ -16,7 +19,7 @@ class Game {
     this._size = size;
     this.startNew();
 
-    this.moveLeftRow = this.moveLeftRow.bind(this);
+    this.moveLine = this.moveLine.bind(this);
     this.canMoveLeftRow = this.canMoveLeftRow.bind(this);
   }
 
@@ -27,25 +30,9 @@ class Game {
     this.createRandomTile();
   }
 
-  canMoveLeft(): boolean {
-    return this.checkRowsOfTiles(this.canMoveLeftRow);
-  }
-
-  canMoveUp(): boolean {
-    return this.checkColsOfTiles(this.canMoveLeftRow);
-  }
-
-  canMoveRight(): boolean {
-    return this.checkRowsOfTiles((row) => this.canMoveLeftRow(row.reverse()));
-  }
-
-  canMoveDown(): boolean {
-    return this.checkColsOfTiles((col) => this.canMoveLeftRow(col.reverse()));
-  }
-
   moveLeft(): void {
     if (!this._gameOver && this.canMoveLeft()) {
-      this.replaceRowsOfTiles(this.moveLeftRow);
+      this.replaceRowsOfTiles((line) => this.moveLine(line, 'row', 'start'));
       this.createRandomTile();
       this.checkGameOver();
     }
@@ -53,7 +40,7 @@ class Game {
 
   moveUp(): void {
     if (!this._gameOver && this.canMoveUp()) {
-      this.replaceColsOfTiles(this.moveLeftRow);
+      this.replaceColsOfTiles((line) => this.moveLine(line, 'col', 'start'));
       this.createRandomTile();
       this.checkGameOver();
     }
@@ -61,7 +48,7 @@ class Game {
 
   moveRight(): void {
     if (!this._gameOver && this.canMoveRight()) {
-      this.replaceRowsOfTiles((row) => this.moveLeftRow(row.reverse()).reverse());
+      this.replaceRowsOfTiles((line) => this.moveLine(line, 'row', 'end'));
       this.createRandomTile();
       this.checkGameOver();
     }
@@ -69,18 +56,32 @@ class Game {
 
   moveDown(): void {
     if (!this._gameOver && this.canMoveDown()) {
-      this.replaceColsOfTiles((col) => this.moveLeftRow(col.reverse()).reverse());
+      this.replaceColsOfTiles((line) => this.moveLine(line, 'col', 'end'));
       this.createRandomTile();
       this.checkGameOver();
     }
+  }
+
+  get size(): number {
+    return this._size;
   }
 
   get score(): number {
     return this._score;
   }
 
-  get tiles(): TilesType {
-    return this._tiles;
+  get tiles(): Tile[] {
+    const result: Tile[] = [];
+
+    this._tiles.forEach((row) =>
+      row.forEach((tile) => {
+        if (tile) {
+          result.push(tile);
+        }
+      })
+    );
+
+    return result;
   }
 
   get gameOver(): boolean {
@@ -105,7 +106,7 @@ class Game {
     const randomColIndex = emptyColIndexes[randomInteger(0, emptyColIndexes.length - 1)];
 
     const tileValue = Math.random() < 0.8 ? 2 : 4;
-    const tile = new Tile(tileValue);
+    const tile = new Tile(tileValue, randomRowIndex, randomColIndex);
 
     this._tiles[randomRowIndex][randomColIndex] = tile;
   }
@@ -121,6 +122,22 @@ class Game {
     if (!canMove) {
       this._gameOver = true;
     }
+  }
+
+  private canMoveLeft(): boolean {
+    return this.checkRowsOfTiles(this.canMoveLeftRow);
+  }
+
+  private canMoveUp(): boolean {
+    return this.checkColsOfTiles(this.canMoveLeftRow);
+  }
+
+  private canMoveRight(): boolean {
+    return this.checkRowsOfTiles((row) => this.canMoveLeftRow(row.reverse()));
+  }
+
+  private canMoveDown(): boolean {
+    return this.checkColsOfTiles((col) => this.canMoveLeftRow(col.reverse()));
   }
 
   private checkRowsOfTiles(callback: (row: Array<Tile | null>) => boolean) {
@@ -186,29 +203,42 @@ class Game {
     return false;
   }
 
-  private moveLeftRow(row: Array<Tile | null>): Array<Tile | null> {
-    const movedRow: Array<Tile | null> = [];
-    let isDoubleLast = false;
+  private moveLine(line: CellType[], lineName: LineName, moveTo: SideLine): CellType[] {
+    let result: CellType[] = [];
+    const copiedLine = [...line];
 
-    for (let i = 0; i < row.length; i++) {
-      const current = row[i];
+    const changeableLineName = lineName === 'row' ? 'col' : 'row';
 
-      if (!current) continue;
-
-      const isFirstTile = movedRow.length === 0;
-      const isEqualPrevious = movedRow[movedRow.length - 1]?.value === current.value;
-
-      if (isFirstTile || !isEqualPrevious || (isEqualPrevious && isDoubleLast)) {
-        movedRow.push(current);
-        isDoubleLast = false;
-      } else if (isEqualPrevious && !isDoubleLast) {
-        movedRow[movedRow.length - 1]?.double();
-        this._score += Number(movedRow[movedRow.length - 1]?.value);
-        isDoubleLast = true;
-      }
+    if (moveTo === 'end') {
+      copiedLine.reverse();
     }
 
-    return fillToLength(movedRow, row.length, null);
+    let currentIndex = moveTo === 'start' ? 0 : line.length - 1;
+    const nextIndex = (index: number) => (moveTo === 'start' ? index + 1 : index - 1);
+
+    let lastTile: CellType = null;
+
+    copiedLine.forEach((tile) => {
+      if (tile === null) return;
+
+      if (lastTile !== null && lastTile.value === tile.value) {
+        lastTile.double();
+        lastTile = null;
+      } else {
+        tile[changeableLineName] = currentIndex;
+        result.push(tile);
+        currentIndex = nextIndex(currentIndex);
+        lastTile = tile;
+      }
+    });
+
+    result = fillToLength(result, line.length, null);
+
+    if (moveTo === 'end') {
+      result.reverse();
+    }
+
+    return result;
   }
 }
 

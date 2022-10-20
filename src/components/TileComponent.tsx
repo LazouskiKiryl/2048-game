@@ -48,17 +48,15 @@ const StyledTileComponent = styled.div<StyledTileProps>`
 
 type TileComponentProps = {
   tile: Tile;
-  row: number;
-  col: number;
   boardWidth: number;
   boardSize: number;
 };
 
-const TileComponent: React.FC<TileComponentProps> = ({ tile, row, col, boardWidth, boardSize }) => {
+const TileComponent: React.FC<TileComponentProps> = ({ tile, boardWidth, boardSize }) => {
   const width = (boardWidth - (boardSize + 1) * boardGap) / boardSize;
 
   return (
-    <StyledTileComponent value={tile.value} row={row} col={col} width={width}>
+    <StyledTileComponent value={tile.value} row={tile.row} col={tile.col} width={width}>
       {tile.value}
     </StyledTileComponent>
   );

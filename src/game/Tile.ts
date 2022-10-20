@@ -5,10 +5,14 @@ class Tile {
 
   private _id: number;
   private _value: TileValue;
+  private _row: number;
+  private _col: number;
 
-  constructor(value: TileValue = 2) {
+  constructor(value: TileValue = 2, row: number, col: number) {
     this._id = Tile.nextId++;
     this._value = value;
+    this._row = row;
+    this._col = col;
   }
 
   double() {
@@ -21,6 +25,22 @@ class Tile {
 
   get value() {
     return this._value;
+  }
+
+  get row() {
+    return this._row;
+  }
+
+  set row(row: number) {
+    this._row = row;
+  }
+
+  get col() {
+    return this._col;
+  }
+
+  set col(col: number) {
+    this._col = col;
   }
 }
 

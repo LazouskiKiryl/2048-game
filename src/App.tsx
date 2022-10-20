@@ -59,7 +59,7 @@ function App() {
       <GlobalStyle />
       {gameOver && <h2 style={{ textAlign: 'center', color: 'red' }}>Game over!</h2>}
       <h2 style={{ textAlign: 'center' }}>Score: {score.toString()}</h2>
-      <Board tiles={tiles} />
+      <Board tiles={tiles} size={game.size} />
       <div style={{ display: 'flex', justifyContent: 'center', padding: '24px' }}>
         <button onClick={newGameHandler}>New Game</button>
       </div>
